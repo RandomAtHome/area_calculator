@@ -22,4 +22,3 @@ main.o: main.c
 
 $(TARGET): $(OBJ)
 	gcc -Wall -o $(TARGET) $(OBJ) -m32
-	
