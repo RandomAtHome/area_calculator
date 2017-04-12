@@ -9,17 +9,17 @@ clean:
 	rm -r $(TARGET) *.o
 
 f1.o: f1.asm
-	nasm -f elf f1.asm -o f1.o
+	nasm -f elf32 f1.asm -o f1.o
 
 f2.o: f2.asm
-	nasm -f elf f2.asm -o f2.o
+	nasm -f elf32 f2.asm -o f2.o
 
 f3.o: f3.asm
-	nasm -f elf f3.asm -o f3.o
+	nasm -f elf32 f3.asm -o f3.o
 
 main.o: main.c
-	gcc -Wall -o main.o -c main.c
+	gcc -Wall -o main.o -c main.c -m32
 
 $(TARGET): $(OBJ)
-	gcc -Wall -o $(TARGET) $(OBJ)
+	gcc -Wall -o $(TARGET) $(OBJ) -m32
 	
