@@ -1,13 +1,9 @@
 #include<stdio.h>
 #include<stdlib.h>
 
-double f1(double x){
-	return x + 1;
-}
-
-double f2(double x){
-	return x * x;
-}
+extern double f1(double x);
+extern double f2(double x);
+extern double f3(double x);
 
 //binary search
 double root(double (*f)(double x), double (*g)(double x),  double a, double b, double eps1){
@@ -37,9 +33,9 @@ double integral(double (*f)(double x), double a, double b, double eps2){
 }
 
 int main(void){
-	double intersection = root(f1, f2, -0.5, 0.5, 0.001);
-	double answ = integral(f2, 0, 1, 0.001);
-	printf("%f", answ);
+	double x;
+	scanf("%lf", &x);
+	printf("%lf %lf %lf\n", f1(x), f2(x), f3(x));
 	return 0;
 }
 
