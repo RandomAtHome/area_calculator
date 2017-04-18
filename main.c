@@ -32,8 +32,12 @@ static struct option long_options[] =
 			{0, 0, 0, 0}
 		};
 
+double inline fabs(double x){
+	return x > 0 ? x : -x;
+}
+
 //binary search
-double root(double (*f)(double x), double (*g)(double x),  double a, double b, double eps1){
+double bin(double (*f)(double x), double (*g)(double x),  double a, double b, double eps1){
 	int mod = f(a) > g(a) ? 1 : -1;
 	double middle = (a+b)/2;
 	while ((b-a)>eps1){
@@ -46,6 +50,15 @@ double root(double (*f)(double x), double (*g)(double x),  double a, double b, d
 		middle = (a+b)/2;
 	}
 	return middle;
+}
+
+//sec
+double sec(double (*f)(double x), double (*g)(double x),  double a, double b, double eps1){
+	while (fabs(f(b) - g(b)) > eps1){
+		steps++;
+		b -= (b-a) * (f(b)-g(b)) / (f(b)-g(b)-f(a)+g(a));
+	}
+	return b;
 }
 
 //trapezium method
@@ -61,6 +74,14 @@ double integral(double (*f)(double x), double a, double b, double eps2){
 }
 
 int main(int argc, char **argv){
+	double (*root)(double (*f)(double x), double (*g)(double x), double a, double b, double eps1);
+	#if METHOD == 1
+	printf("Compiled with Binary Search\n");
+	root = bin;
+	#else
+	printf("Compiled with Chords Method\n");
+	root = sec;
+	#endif
 	int option_index = 0;
 	int c = 0;
 	while((c = getopt_long_only(argc, argv, "hisr:a:", long_options, &option_index)) != -1){
@@ -97,7 +118,9 @@ int main(int argc, char **argv){
 		printf(help_text);
 		return 0;
 	}
+		
 	double x1, x2, x3;
+	//double (*root)(double (*f)(double x), double (*g)(double x), double a, double b, double eps1) = sec;
 	x1 = root(f1, f2, 5.5, 6.5, EPS1); //
 	x2 = root(f2, f3, 3.5, 4.5, EPS1); // all limits are precalculated
 	x3 = root(f3, f1, 2.01, 2.5, EPS1);//
