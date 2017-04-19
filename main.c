@@ -39,6 +39,11 @@ double inline fabs(double x){
 #if METHOD == 1
 //binary search
 double root(double (*f)(double x), double (*g)(double x),  double a, double b, double eps1){
+	if (a > b){
+		double tmp = a;
+		a = b;
+		b = tmp;
+	}
 	int mod = f(a) > g(a) ? 1 : -1;
 	double middle = (a+b)/2;
 	while ((b-a)>eps1){
@@ -55,6 +60,11 @@ double root(double (*f)(double x), double (*g)(double x),  double a, double b, d
 #else
 //sec
 double root(double (*f)(double x), double (*g)(double x),  double a, double b, double eps1){
+	if (a > b){
+		double tmp = a;
+		a = b;
+		b = tmp;
+	}
 	while (fabs(f(b) - g(b)) > eps1){
 		steps++;
 		b -= (b-a) * (f(b)-g(b)) / (f(b)-g(b)-f(a)+g(a));
@@ -64,6 +74,11 @@ double root(double (*f)(double x), double (*g)(double x),  double a, double b, d
 #endif
 //trapezium method
 double integral(double (*f)(double x), double a, double b, double eps2){
+	if (a > b){
+		double tmp = a;
+		a = b;
+		b = tmp;
+	}
 	double answ = (f(a) + f(b))/2;
 	a += eps2;
 	while (a < b){
@@ -178,7 +193,7 @@ int main(int argc, char **argv){
 				}
 				root_checker = malloc(sizeof(char) * (strlen(optarg) + 1));
 				strcpy(root_checker, optarg);
-				for (count = 1; optind < argc && *argv[optind] != '-' && count < 4; optind++, count++){
+				for (count = 1; optind < argc && count < 4; optind++, count++){
 					strcat(root_checker, " "); // this is terrible
 					strcat(root_checker, argv[optind]);
 				}
@@ -194,7 +209,7 @@ int main(int argc, char **argv){
 				}
 				integral_checker = malloc(sizeof(char) * (strlen(optarg) + 1));
 				strcpy(integral_checker, optarg);
-				for (count = 1; optind < argc && *argv[optind] != '-' && count < 3; optind++, count++){
+				for (count = 1; optind < argc && count < 3; optind++, count++){
 					strcat(integral_checker, " "); // this is terrible
 					strcat(integral_checker, argv[optind]);
 				}
