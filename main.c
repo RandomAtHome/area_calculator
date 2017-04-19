@@ -19,7 +19,8 @@ static char *help_text = "Options:\n"
 						 "-i / --intersect	print abscisses of intersections\n"
 						 "-s / --steps	\tprint amount of steps of equation solver algorithm\n"
 						 "-r / --root	\tfind intersection of 2 functions on given interval\n"
-						 "-a / --integral	\tcalculate integral of 2 functions on given interval\n";
+						 "-a / --integral	\tcalculate integral of 2 functions on given interval\n"
+						 "If -r and/or -a are specified -i and -s are ignored\n";
 static char *root_checker;
 static char *integral_checker;
 static struct option long_options[] =
@@ -35,9 +36,9 @@ static struct option long_options[] =
 double inline fabs(double x){
 	return x > 0 ? x : -x;
 }
-
+#if METHOD == 1
 //binary search
-double bin(double (*f)(double x), double (*g)(double x),  double a, double b, double eps1){
+double root(double (*f)(double x), double (*g)(double x),  double a, double b, double eps1){
 	int mod = f(a) > g(a) ? 1 : -1;
 	double middle = (a+b)/2;
 	while ((b-a)>eps1){
@@ -51,16 +52,16 @@ double bin(double (*f)(double x), double (*g)(double x),  double a, double b, do
 	}
 	return middle;
 }
-
+#else
 //sec
-double sec(double (*f)(double x), double (*g)(double x),  double a, double b, double eps1){
+double root(double (*f)(double x), double (*g)(double x),  double a, double b, double eps1){
 	while (fabs(f(b) - g(b)) > eps1){
 		steps++;
 		b -= (b-a) * (f(b)-g(b)) / (f(b)-g(b)-f(a)+g(a));
 	}
 	return b;
 }
-
+#endif
 //trapezium method
 double integral(double (*f)(double x), double a, double b, double eps2){
 	double answ = (f(a) + f(b))/2;
@@ -73,17 +74,85 @@ double integral(double (*f)(double x), double a, double b, double eps2){
 	return answ;
 }
 
+int process_root(char * input_line){
+	if (!input_line){
+		return -1;
+	}
+	double a, b;
+	double (*f)(double x), (*g)(double x);
+	int num1, num2;
+	sscanf(input_line, "%d%d%lf%lf", &num1, &num2, &a, &b);
+	// this is terrible. fix this please
+	switch (num1){
+		case 1:
+			f = f1;
+			break;
+		case 2:
+			f = f2;
+			break;
+		case 3:
+			f = f3;
+			break;
+		default:
+			return 1;
+	}
+	switch (num2){
+		case 1:
+			g = f1;
+			break;
+		case 2:
+			g = f2;
+			break;
+		case 3:
+			g = f3;
+			break;
+		default:
+			return 1;
+	}
+	double x = root(f, g, a, b, EPS1);
+	printf("-r execution:\n");
+	printf("F%d intersects with F%d: %lf\n", num1, num2, x);
+	printf("---\n");
+	return 0;
+}
+
+int process_integral(char * input_line){
+	if (!input_line){
+		return -1;
+	}
+	double a, b;
+	double (*f)(double x);
+	int num1;
+	sscanf(input_line, "%d%lf%lf", &num1, &a, &b);
+	// this is terrible. fix this please
+	switch (num1){
+		case 1:
+			f = f1;
+			break;
+		case 2:
+			f = f2;
+			break;
+		case 3:
+			f = f3;
+			break;
+		default:
+			return 1;
+	}
+	double x = integral(f, a, b, EPS2);
+	printf("-a execution:\n");
+	printf("F%d area: %lf\n", num1, x);
+	printf("---\n");
+	return 0;
+}
+
 int main(int argc, char **argv){
-	double (*root)(double (*f)(double x), double (*g)(double x), double a, double b, double eps1);
 	#if METHOD == 1
 	printf("Compiled with Binary Search\n");
-	root = bin;
 	#else
 	printf("Compiled with Chords Method\n");
-	root = sec;
 	#endif
 	int option_index = 0;
-	int c = 0;
+	int c = 0, count;
 	while((c = getopt_long_only(argc, argv, "hisr:a:", long_options, &option_index)) != -1){
 		option_index = 0;
 		switch (c)
@@ -104,10 +173,35 @@ int main(int argc, char **argv){
 				break;
 
 			case 'r':
+				if (root_checker){
+					free(root_checker);
+				}
+				root_checker = malloc(sizeof(char) * (strlen(optarg) + 1));
 				strcpy(root_checker, optarg);
+				for (count = 1; optind < argc && *argv[optind] != '-' && count < 4; optind++, count++){
+					strcat(root_checker, " "); // this is terrible
+					strcat(root_checker, argv[optind]);
+				}
+				if (count < 4){
+					printf("Something wrong with -r!\n");
+					abort();
+				}
+				
 				break;
 			case 'a':
+				if (integral_checker){
+					free(integral_checker);
+				}
+				integral_checker = malloc(sizeof(char) * (strlen(optarg) + 1));
 				strcpy(integral_checker, optarg);
+				for (count = 1; optind < argc && *argv[optind] != '-' && count < 3; optind++, count++){
+					strcat(integral_checker, " "); // this is terrible
+					strcat(integral_checker, argv[optind]);
+				}
+				if (count < 3){
+					printf("Something wrong with -a!\n");
+					abort();
+				}
 				break;
 
 			default:
@@ -118,9 +212,12 @@ int main(int argc, char **argv){
 		printf(help_text);
 		return 0;
 	}
-		
+	if (root_checker || integral_checker){
+		process_root(root_checker);
+		process_integral(integral_checker);
+		return 0;
+	}
 	double x1, x2, x3;
-	//double (*root)(double (*f)(double x), double (*g)(double x), double a, double b, double eps1) = sec;
 	x1 = root(f1, f2, 5.5, 6.5, EPS1); //
 	x2 = root(f2, f3, 3.5, 4.5, EPS1); // all limits are precalculated
 	x3 = root(f3, f1, 2.01, 2.5, EPS1);//

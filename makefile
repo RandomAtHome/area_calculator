@@ -11,7 +11,7 @@ chords: METHOD = 2
 chords: clean $(TARGET)
 	
 clean:
-	rm $(TARGET) *.o
+	rm -f $(TARGET) *.o
 
 f1.o: f1.asm
 	nasm -f elf32 f1.asm -o f1.o
