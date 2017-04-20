@@ -5,6 +5,12 @@
 #include<getopt.h>
 #define EPS1 0.001
 #define EPS2 0.0001
+#ifndef START
+#define START 2.1
+#endif
+#ifndef END
+#define END 6.5
+#endif
 
 extern double f1(double x);
 extern double f2(double x);
@@ -233,9 +239,9 @@ int main(int argc, char **argv){
 		return 0;
 	}
 	double x1, x2, x3;
-	x1 = root(f1, f2, 5.5, 6.5, EPS1); //
-	x2 = root(f2, f3, 3.5, 4.5, EPS1); // all limits are precalculated
-	x3 = root(f3, f1, 2.01, 2.5, EPS1);//
+	x1 = root(f1, f2, START, END, EPS1); //
+	x2 = root(f2, f3, START, END, EPS1); // all limits are precalculated
+	x3 = root(f3, f1, START, END, EPS1);//
 	double answ = 0;
 	answ += integral(f3, x3, x2, EPS2);
 	answ += integral(f2, x2, x1, EPS2);

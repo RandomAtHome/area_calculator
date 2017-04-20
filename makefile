@@ -1,6 +1,6 @@
 .PHONY: all clean
 TARGET = main
-OBJ = f1.o f2.o f3.o main.o
+OBJ = functions.o main.o
 METHOD ?= 1
 
 all: $(TARGET)
@@ -13,14 +13,8 @@ chords: clean $(TARGET)
 clean:
 	rm -f $(TARGET) *.o
 
-f1.o: f1.asm
-	nasm -f elf32 f1.asm -o f1.o
-
-f2.o: f2.asm
-	nasm -f elf32 f2.asm -o f2.o
-
-f3.o: f3.asm
-	nasm -f elf32 f3.asm -o f3.o
+functions.o: functions.asm
+	nasm -f elf32 functions.asm -o functions.o
 
 main.o: main.c
 	gcc -Wall -D METHOD=$(METHOD) -o main.o -c main.c -m32
