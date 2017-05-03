@@ -5,11 +5,11 @@
 #include<getopt.h>
 #define EPS1 0.001
 #define EPS2 0.0001
-#ifndef START
-#define START 2.1
+#ifndef START_SEG
+#define START_SEG 2.1
 #endif
-#ifndef END
-#define END 6.5
+#ifndef END_SEG
+#define END_SEG 6.5
 #endif
 
 extern double f1(double x);
@@ -204,7 +204,7 @@ int main(int argc, char **argv){
 					strcat(root_checker, argv[optind]);
 				}
 				if (count < 4){
-					printf("Something wrong with -r!\n");
+					printf("Not enough arguments for -r!\n");
 					abort();
 				}
 				
@@ -220,7 +220,7 @@ int main(int argc, char **argv){
 					strcat(integral_checker, argv[optind]);
 				}
 				if (count < 3){
-					printf("Something wrong with -a!\n");
+					printf("Not enough arguments for -a!\n");
 					abort();
 				}
 				break;
@@ -234,14 +234,18 @@ int main(int argc, char **argv){
 		return 0;
 	}
 	if (root_checker || integral_checker){
-		process_root(root_checker);
-		process_integral(integral_checker);
+        if (process_root(root_checker) == 1){
+            printf("Functions numbers are invalid for -r\n");
+        }
+        if (process_integral(integral_checker) == 1){
+            printf("Function number is invalid for -a\n");
+        }
 		return 0;
 	}
 	double x1, x2, x3;
-	x1 = root(f1, f2, START, END, EPS1); //
-	x2 = root(f2, f3, START, END, EPS1); // all limits are precalculated
-	x3 = root(f3, f1, START, END, EPS1);//
+	x1 = root(f1, f2, START_SEG, END_SEG, EPS1); //
+	x2 = root(f2, f3, START_SEG, END_SEG, EPS1); // all limits are precalculated
+	x3 = root(f3, f1, START_SEG, END_SEG, EPS1);//
 	double answ = 0;
 	answ += integral(f3, x3, x2, EPS2);
 	answ += integral(f2, x2, x1, EPS2);

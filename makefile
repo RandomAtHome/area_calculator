@@ -1,14 +1,14 @@
-.PHONY: all clean
+.PHONY: clean main.o 
 TARGET = main
 OBJ = functions.o main.o
 METHOD ?= 1
 
 all: $(TARGET)
 
-binary: clean $(TARGET)
+binary: $(TARGET)
 
 chords: METHOD = 2
-chords: clean $(TARGET)
+chords: $(TARGET)
 	
 clean:
 	rm -f $(TARGET) *.o
