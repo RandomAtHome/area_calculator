@@ -4,7 +4,7 @@
 #include<unistd.h>
 #include<getopt.h>
 #define EPS1 0.001
-#define EPS2 0.0001
+#define EPS2 0.001
 #ifndef START_SEG
 #define START_SEG 2.1
 #endif
@@ -24,8 +24,8 @@ static char *help_text = "Options:\n"
 						 "-h / --help	\tshow this help\n"
 						 "-i / --intersect	print abscisses of intersections\n"
 						 "-s / --steps	\tprint amount of steps of equation solver algorithm\n"
-						 "-r / --root	\tfind intersection of 2 functions on given interval\n"
-						 "-a / --integral	\tcalculate integral of 2 functions on given interval\n"
+						 "-r / --root	\tfind intersection of 2 functions on given interval (FUNC_NUM1 FUNC_NUM2 SEG_START SEG_END)\n"
+						 "-a / --integral	\tcalculate integral of a function on given interval (FUNC_NUM1 SEG_START SEG_END)\n"
 						 "If -r and/or -a are specified -i and -s are ignored\n";
 static char *root_checker;
 static char *integral_checker;
@@ -78,6 +78,7 @@ double root(double (*f)(double x), double (*g)(double x),  double a, double b, d
 	return b;
 }
 #endif
+
 //trapezium method
 double integral(double (*f)(double x), double a, double b, double eps2){
 	if (a > b){
@@ -85,14 +86,22 @@ double integral(double (*f)(double x), double a, double b, double eps2){
 		a = b;
 		b = tmp;
 	}
-	double answ = (f(a) + f(b))/2;
-	a += eps2;
-	while (a < b){
-		answ += f(a);
-		a += eps2;
-	}
-	answ *= eps2;
-	return answ;
+	int n = 1;
+	double prev_i = 0;
+	double p = (double)1/3;
+	double h = (b - a);
+	double f_summ = (f(a) + f(b)) / 2;
+	do {
+		prev_i = f_summ * h;
+		f_summ = (f(a) + f(b)) / 2;
+		n *= 2;
+		h = (b - a) / n;
+		int i = 0;
+		for (i = 1; i < n; i++){
+			f_summ += f(a + i*h);
+		}
+	} while (p*fabs(f_summ * h - prev_i) > eps2);
+	return f_summ * h;
 }
 
 int process_root(char * input_line){
