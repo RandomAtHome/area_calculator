@@ -3,8 +3,8 @@
 #include<string.h>
 #include<unistd.h>
 #include<getopt.h>
-#define EPS1 0.001
-#define EPS2 0.001
+#define EPS1 0.00033
+#define EPS2 0.00033
 #ifndef START_SEG
 #define START_SEG 2.1
 #endif
