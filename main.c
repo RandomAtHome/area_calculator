@@ -24,16 +24,22 @@ static char *help_text = "Options:\n"
 						 "-h / --help	\tshow this help\n"
 						 "-i / --intersect	print abscisses of intersections\n"
 						 "-s / --steps	\tprint amount of steps of equation solver algorithm\n"
-						 "-r / --root	\tfind intersection of 2 functions on given interval (FUNC_NUM1 FUNC_NUM2 SEG_START SEG_END)\n"
-						 "-a / --integral	\tcalculate integral of a function on given interval (FUNC_NUM1 SEG_START SEG_END)\n"
+						 "-r / --root	\tfind intersection of 2 functions on given interval\n"
+						 "example FUNC_NUM1 FUNC_NUM2 SEG_START SEG_END\n"
+						 "-a / --integral	\tcalculate integral of a function on given interval\n"
+						 "example FUNC_NUM1 SEG_START SEG_END\n"
+						 "-t / --test	\tcalculate function value at given interval\n"
+						 "example FUNC_NUM POINT\n"
 						 "If -r and/or -a are specified -i and -s are ignored\n";
 static char *root_checker;
 static char *integral_checker;
+static char *func_checker;
 static struct option long_options[] =
 		{
 			{"help", no_argument, &help_print, 1},
 			{"intersections", no_argument,   &intersection_print, 1},
 			{"steps",  no_argument, &steps_print, 1},
+			{"test", required_argument, 0, 't'},
 			{"root",  required_argument, 0, 'r'},
 			{"integral",  required_argument, 0, 'a'},
 			{0, 0, 0, 0}
@@ -102,6 +108,35 @@ double integral(double (*f)(double x), double a, double b, double eps2){
 		}
 	} while (p*fabs(f_summ * h - prev_i) > eps2);
 	return f_summ * h;
+}
+
+int process_func(char * input_line){
+	if (!input_line){
+		return -1;
+	}
+	double x;
+	double (*f)(double x);
+	int num1;
+	sscanf(input_line, "%d%lf", &num1, &x);
+	// this is terrible. fix this please
+	switch (num1){
+		case 1:
+			f = f1;
+			break;
+		case 2:
+			f = f2;
+			break;
+		case 3:
+			f = f3;
+			break;
+		default:
+			return 1;
+	}
+	double res = f(x);
+	printf("-t execution:\n");
+	printf("F%d value at %lf is %lf\n", num1, x, res);
+	printf("---\n");
+	return 0;
 }
 
 int process_root(char * input_line){
@@ -183,7 +218,7 @@ int main(int argc, char **argv){
 	#endif
 	int option_index = 0;
 	int c = 0, count;
-	while((c = getopt_long_only(argc, argv, "hisr:a:", long_options, &option_index)) != -1){
+	while((c = getopt_long_only(argc, argv, "hisr:a:t:", long_options, &option_index)) != -1){
 		option_index = 0;
 		switch (c)
 			{
@@ -201,7 +236,23 @@ int main(int argc, char **argv){
 			case 's':
 				steps_print = 1;
 				break;
-
+				
+			case 't':
+				if (func_checker){
+					free(func_checker);
+				}
+				func_checker = malloc(sizeof(char) * (strlen(optarg) + 1));
+				strcpy(func_checker, optarg);
+				for (count = 1; optind < argc && count < 2; optind++, count++){
+					strcat(func_checker, " "); // this is terrible
+					strcat(func_checker, argv[optind]);
+				}
+				if (count < 2){
+					printf("Not enough arguments for -t!\n");
+					abort();
+				}
+				break;
+			
 			case 'r':
 				if (root_checker){
 					free(root_checker);
@@ -242,11 +293,14 @@ int main(int argc, char **argv){
 		printf(help_text);
 		return 0;
 	}
-	if (root_checker || integral_checker){
+	if (root_checker || integral_checker || func_checker){
         if (process_root(root_checker) == 1){
             printf("Functions numbers are invalid for -r\n");
         }
         if (process_integral(integral_checker) == 1){
+            printf("Function number is invalid for -a\n");
+        }
+        if (process_func(func_checker) == 1){
             printf("Function number is invalid for -a\n");
         }
 		return 0;
